@@ -1,0 +1,8 @@
+Package: apt-golang-s3
+Version: 0.0.0
+Section: base
+Priority: optional
+Architecture: amd64
+Depends: debconf (>= 0.2.26)
+Maintainer: Jacopo Sabbatini <dedalusj@gmail.com>
+Description: An apt transport method for downloading packages from repositories hosted in s3. Written in Go.

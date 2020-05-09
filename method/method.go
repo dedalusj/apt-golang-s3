@@ -109,7 +109,7 @@ const (
 	logFilename = "/var/log/apt_s3.log"
 )
 
-var logger *log.Logger
+var logger *log.Logger = log.New(ioutil.Discard, "", log.LstdFlags)
 
 // A Method implements the logic to process incoming apt messages and respond
 // accordingly.

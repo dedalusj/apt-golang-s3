@@ -21,14 +21,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
 
 	"github.com/google/apt-golang-s3/method"
 )
 
-const (
-	version = "1.0.0"
-)
+var Version = "0.0.0"
+var Build = "dev"
 
 var (
 	showVersion = flag.Bool("version", false, "Print version and exit")
@@ -38,7 +36,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("apt-golang-s3 %s (Go version: %s)\n", version, runtime.Version())
+		fmt.Printf("apt-golang-s3 - version: %s, build: %s\n", Version, Build)
 		os.Exit(0)
 	}
 
