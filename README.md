@@ -2,10 +2,6 @@
 
 _An s3 transport method for the `apt` package management system_
 
-[![Build Status](https://travis-ci.org/google/apt-golang-s3.svg?branch=master)](https://travis-ci.org/google/apt-golang-s3)
-[![Go Report Card](https://goreportcard.com/badge/github.com/google/apt-golang-s3)](https://goreportcard.com/report/github.com/google/apt-golang-s3)
-[![GoDoc](https://godoc.org/github.com/google/apt-golang-s3?status.svg)](https://godoc.org/github.com/google/apt-golang-s3)
-
 The apt-golang-s3 project provides support for hosting private
 [apt](https://en.wikipedia.org/wiki/APT_(Debian)) repositories in
 [Amazon S3](https://aws.amazon.com/s3/). This is useful if you have private
@@ -20,15 +16,15 @@ solve this problem, but they come with some limitations.
 This project is an attempt to address those limitations.
 
 ## TL;DR
-1. Build the binary `$ go build -o apt-golang-s3 main.go`
-1. Install the binary `$ sudo cp apt-golang-s3 /usr/lib/apt/methods/s3`
+1. Build the binary `$ make build`
+1. Install the binary `$ sudo cp s3 /usr/lib/apt/methods/s3`
 1. Add your s3 based source to a package list `$ echo "deb s3://access-key:access-secret@s3.amazonaws.com/private-repo-bucket stable main" > /etc/apt/sources.list.d/private-repo.list`
 1. Update and install packages `$ sudo apt-get update && sudo apt-get install your-private-package`
 
 ## Building the go program
 
-There is an included Dockerfile to setup an environment for building the binary
-in a sandboxed environment:
+There is an included Dockerfile to set up an environment for building the binary
+in a sandbox environment:
 
 ```
 $ ls
@@ -39,46 +35,41 @@ $ docker build -t apt-golang-s3 .
 
 $ docker run -it --rm -v $(pwd):/app apt-golang-s3 bash
 
-root@83823fffd369:/app# ls
-Dockerfile  README.md  build-deb.sh  go.mod  go.sum  main.go  method
-
-root@83823fffd369:/app# go build -o apt-golang-s3 main.go
+root@83823fffd369:/app#make build
 ...
 
 root@83823fffd369:/app# ls
-Dockerfile  README.md  apt-golang-s3  build-deb.sh  go.mod  go.sum  main.go  method
+Dockerfile  README.md  s3  go.mod  go.sum  main.go  method
 
 root@83823fffd369:/app# exit
 exit
 
 $ ls
-apt-golang-s3  build-deb.sh  Dockerfile  go.mod  go.sum  main.go  method  README.md
+s3  Dockerfile  go.mod  go.sum  main.go  method  README.md
 ```
 
 ## Building a debian package
 
-For convenience, there is a small bash script in the repository that can build
+For convenience, there is a make target that can build
 the binary and package it as a .deb.
 
 ```
 $ ls
-build-deb.sh  Dockerfile  go.mod  go.sum  main.go  method  README.md
+Makefile  Dockerfile  go.mod  go.sum  main.go  method  README.md
 
 $ docker build -t apt-golang-s3 .
 
-$ docker run -it --rm -v $(pwd):/app apt-golang-s3 /app/build-deb.sh
-...
-Created package {:path=>"apt-golang-s3_1_amd64.deb"}
+$ docker run -it --rm -v $(pwd):/app apt-golang-s3 make build_debian
 
 $ ls
-apt-golang-s3  apt-golang-s3_1_amd64.deb  build-deb.sh  Dockerfile  go.mod  go.sum  main.go  method  README.md
+s3  apt-golang-s3-<version>.deb  Dockerfile  go.mod  go.sum  main.go  method  README.md
 ```
 
 ## Installing in production
 
-The `apt-golang-s3` binary is an executable. To install it copy it to
+The `s3` binary is an executable. To install it copy it to
 `/usr/lib/apt/methods/s3` on your computer. The .deb file produced by
-`build-deb.sh` will install the method in the correct place.
+`make build_debian` will install the method in the correct place.
 
 
 ## Configuration

@@ -30,9 +30,3 @@ jobs:
     - name: Build debian
       run: |
         make build_debian
-
-    - name: Upload debian file
-      uses: actions/upload-artifact@v1
-      with:
-        name: debian
-        path: ../apt-golang-s3*.deb
