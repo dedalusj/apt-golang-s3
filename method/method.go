@@ -105,6 +105,12 @@ const (
 	s3Hostname                = "s3.amazonaws.com"
 )
 
+const (
+	logFilename = "/var/log/apt_s3.log"
+)
+
+var logger *log.Logger = log.New(ioutil.Discard, "", log.LstdFlags)
+
 // A Method implements the logic to process incoming apt messages and respond
 // accordingly.
 type Method struct {
@@ -135,6 +141,12 @@ func New() *Method {
 // os.Stdin. Results are written to os.Stdout. The running Method waits for all
 // Messages to be processed before exiting.
 func (m *Method) Run() {
+	logFile, err := os.OpenFile(logFilename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		m.handleError(fmt.Errorf("failed to open log file %s", logFilename))
+	}
+	logger = log.New(logFile, "", log.LstdFlags|log.LUTC)
+
 	m.flushCapabilities()
 	go m.readInput(os.Stdin)
 	go m.processMessages()
@@ -143,6 +155,7 @@ func (m *Method) Run() {
 
 func (m *Method) flushCapabilities() {
 	msg := capabilities()
+	logger.Printf("Sending capabilities:\n%s\n\n", msg)
 	m.stdout.Println(msg)
 }
 
@@ -200,7 +213,10 @@ func (m *Method) processMessages() {
 // the Message.Header.Status value.
 func (m *Method) handleBytes(b []byte) {
 	msg, err := message.FromBytes(b)
-	m.handleError(err)
+	if err != nil {
+		logger.Printf("Error [%s] while interpreting message:\n%s\n\n", err.Error(), string(b))
+		m.handleError(err)
+	}
 	if msg.Header.Status == headerCodeURIAcquire {
 		// URI Acquire message
 		m.uriAcquire(msg)
@@ -270,6 +286,8 @@ func newLocation(value string) (objectLocation, error) {
 // uriAcquire downloads and stores objects from S3 based on the contents
 // of the provided Message.
 func (m *Method) uriAcquire(msg *message.Message) {
+	logger.Printf("Received uri acquire message:\n%s\n\n", msg)
+
 	m.waitForConfiguration()
 	uri, hasField := msg.GetFieldValue(fieldNameURI)
 	if !hasField {
@@ -348,13 +366,16 @@ func (m *Method) s3Client(user *url.Userinfo) s3iface.S3API {
 // configuration has been applied, the Method's sync.WaitGroup is decremented
 // by 1.
 func (m *Method) configure(msg *message.Message) {
+	logger.Printf("Received configuration message:\n%s\n\n", msg)
 	items := msg.GetFieldList(fieldNameConfigItem)
 	for _, f := range items {
 		config := strings.Split(f.Value, "=")
 		switch config[0] {
 		case configItemAcquireS3Region:
+			logger.Printf("Applying region configuration: %s\n", config[1])
 			m.region = config[1]
 		case configItemAcquireS3Role:
+			logger.Printf("Applying role configuration: %s\n", config[1])
 			m.roleARN = config[1]
 		}
 	}

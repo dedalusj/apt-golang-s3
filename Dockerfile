@@ -20,7 +20,5 @@ RUN mkdir -p $BUILD_DIR
 WORKDIR $BUILD_DIR
 
 RUN apt-get update
-RUN apt-get install ruby-dev -y
-RUN gem install fpm --no-ri --no-rdoc
 
 COPY . $BUILD_DIR/
